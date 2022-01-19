@@ -1,0 +1,5 @@
+node_modules
+**/node_modules
+**/lib
+**/package.json
+run_and_reload
