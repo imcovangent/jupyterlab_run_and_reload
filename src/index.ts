@@ -16,6 +16,8 @@ import {
   // INotebookModel
 } from '@jupyterlab/notebook';
 
+import { Widget } from '@lumino/widgets';
+
 namespace CommandIDs {
   export const reloadAll = 'run-and-reload:run-all-cells-and-reload';
 }
@@ -60,11 +62,41 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     commands.addCommand(CommandIDs.reloadAll, {
       label: 'Run All Cells and Reload PDFs',
-      caption: 'Reload all static files',
+      caption:
+        'Reload all static files after your notebook is finished running all cells.',
       isEnabled: () => shell.currentWidget instanceof NotebookPanel,
       execute: async () => {
         // Get currently selected widget
         const currentWidget = shell.currentWidget;
+
+        // If current widget is a notebook then we can run all cells
+        // If not, then this command does not make sense and should not be callable actually
+        if (!(currentWidget instanceof NotebookPanel)) {
+          return;
+        }
+
+        function widgetShouldReload(widget: Widget) {
+          const context = manager.contextForWidget(widget);
+          return context?.path.endsWith('.pdf');
+        }
+
+        // Get all attached widgets in the shell
+        const currentWidgets = toArray(shell.widgets());
+
+        // Obtain the list of widgets that might need to be reloaded after the notebook is finished
+        const widgetsToReload = currentWidgets.filter(widgetShouldReload);
+        const contextsToReload = widgetsToReload.map(widget =>
+          manager.contextForWidget(widget)
+        );
+
+        // Connect the openOrReveal function to the fileChanged signal of the relevant widgets
+        for (const context of contextsToReload) {
+          if (context !== undefined) {
+            context.fileChanged.connect((context, model) => {
+              manager.openOrReveal(context.path);
+            });
+          }
+        }
 
         // If current widget is a notebook then we can run all cells
         if (currentWidget instanceof NotebookPanel) {
@@ -73,18 +105,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
             currentWidget.content,
             currentWidget.sessionContext
           );
-        } else {
-          return;
         }
 
-        // Loop over all widgets in the shell and reload the one that are PDFs
-        for (const widget of toArray(shell.widgets())) {
-          if (widget !== undefined) {
-            const context = manager.contextForWidget(widget);
-            if (context?.path.endsWith('.pdf')) {
-              context.revert();
-            }
-          }
+        // Loop over all widgets in the shell and revert the relevant ones
+        for (const context of contextsToReload) {
+          context?.revert();
         }
       }
     });
