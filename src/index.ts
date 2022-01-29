@@ -90,13 +90,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
         );
 
         // Connect the openOrReveal function to the fileChanged signal of the relevant widgets
-        for (const context of contextsToReload) {
-          if (context !== undefined) {
-            context.fileChanged.connect((context, model) => {
-              manager.openOrReveal(context.path);
-            });
-          }
-        }
+        contextsToReload.forEach(context => {
+          context?.fileChanged.connect((context, model) => {
+            manager.openOrReveal(context.path);
+          });
+        });
 
         // If current widget is a notebook then we can run all cells
         if (currentWidget instanceof NotebookPanel) {
