@@ -1,10 +1,18 @@
 # run_and_reload
 
-[![Github Actions Status](https://github.com/github_username/run_and_reload/workflows/Build/badge.svg)](https://github.com/github_username/run_and_reload/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/github_username/run_and_reload/main?urlpath=lab)
+[![Github Actions Status](https://github.com/imcovangent/run_and_reload/workflows/Build/badge.svg)](https://github.com/imcovangent/run_and_reload/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/imcovangent/run_and_reload/main?urlpath=lab)
 
 A JupyterLab extension to run all notebook cells and reload static content (e.g. PDF).
 
+This extension is motivated by the use of [pylatex](https://github.com/JelteF/PyLaTeX) in a notebook on Jupyter Lab. When you run a notebook that creates a PDF file, you normally have to manually reload the file if it is already open. With this extension you can simply run your notebook and the PDF file gets reloaded automatically. Like this:
 
+![Demo run and reload GIF](examples/demo_run_and_reload.gif)
+
+The extension provides the command "Run all cells and reload PDFs". This command is available in a notebook in multiple places:
+
+- Under the run menu
+- Under the keyboard shortcut ctrl + shift + D
+- In the command palette (ctrl + shift + C)
 
 ## Requirements
 
