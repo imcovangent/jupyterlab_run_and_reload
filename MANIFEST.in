@@ -7,7 +7,7 @@ include install.json
 include ts*.json
 include yarn.lock
 
-graft run_and_reload/labextension
+graft jupyterlab_run_and_reload/labextension
 
 # Javascript files
 graft src
@@ -23,3 +23,6 @@ global-exclude *.pyc
 global-exclude *.pyo
 global-exclude .git
 global-exclude .ipynb_checkpoints
+
+# README GIF
+graft examples/demo_jupyterlab_run_and_reload.gif

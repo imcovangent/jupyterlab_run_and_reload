@@ -1,4 +1,4 @@
-# a mybinder.org-ready environment for demoing run_and_reload
+# a mybinder.org-ready environment for demoing jupyterlab_run_and_reload
 # this environment may also be used locally on Linux/MacOS/Windows, e.g.
 #
 #   conda env update --file binder/environment.yml

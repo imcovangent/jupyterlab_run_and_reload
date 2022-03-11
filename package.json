@@ -1,5 +1,5 @@
 {
-  "name": "run_and_reload",
+  "name": "jupyterlab_run_and_reload",
   "version": "0.1.0",
   "description": "A JupyterLab extension to run all notebook cells and reload static content (e.g. PDF).",
   "keywords": [
@@ -36,7 +36,7 @@
     "build:lib": "tsc",
     "clean": "jlpm run clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
-    "clean:labextension": "rimraf run_and_reload/labextension",
+    "clean:labextension": "rimraf jupyterlab_run_and_reload/labextension",
     "clean:all": "jlpm run clean:lib && jlpm run clean:labextension",
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
@@ -74,7 +74,7 @@
   },
   "jupyterlab": {
     "extension": true,
-    "outputDir": "run_and_reload/labextension",
+    "outputDir": "jupyterlab_run_and_reload/labextension",
     "schemaDir": "schema"
   },
   "jupyter-releaser": {
