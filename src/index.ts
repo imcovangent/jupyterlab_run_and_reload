@@ -26,7 +26,7 @@ namespace CommandIDs {
 const PALETTE_CATEGORY = 'Run and reload extension';
 
 /**
- * Initialization data for the run_and_reload extension.
+ * Initialization data for the jupyterlab_run_and_reload extension.
  *
  * TODOs:
  * - Add setting: file extensions to reload
@@ -35,7 +35,7 @@ const PALETTE_CATEGORY = 'Run and reload extension';
  * - Also add "Restart kernel, run all cells and reload PDFs"
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'run_and_reload:plugin',
+  id: 'jupyterlab_run_and_reload:plugin',
   autoStart: true,
   requires: [IDocumentManager],
   optional: [ISettingRegistry, ICommandPalette],
@@ -45,16 +45,16 @@ const plugin: JupyterFrontEndPlugin<void> = {
     settingRegistry: ISettingRegistry | null,
     palette: ICommandPalette | null
   ) => {
-    console.log('JupyterLab extension run_and_reload is activated!');
+    console.log('JupyterLab extension jupyterlab_run_and_reload is activated!');
 
     if (settingRegistry) {
       settingRegistry
         .load(plugin.id)
         .then(settings => {
-          console.log('run_and_reload settings loaded:', settings.composite);
+          console.log('jupyterlab_run_and_reload settings loaded:', settings.composite);
         })
         .catch(reason => {
-          console.error('Failed to load settings for run_and_reload.', reason);
+          console.error('Failed to load settings for jupyterlab_run_and_reload.', reason);
         });
     }
 

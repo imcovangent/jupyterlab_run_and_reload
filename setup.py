@@ -1,5 +1,5 @@
 """
-run_and_reload setup
+jupyterlab_run_and_reload setup
 """
 import json
 import sys
@@ -10,7 +10,7 @@ import setuptools
 HERE = Path(__file__).parent.resolve()
 
 # The name of the project
-name = "run_and_reload"
+name = "jupyterlab_run_and_reload"
 
 lab_path = (HERE / name.replace("-", "_") / "labextension")
 
@@ -20,7 +20,7 @@ ensured_targets = [
     str(lab_path / "static/style.js")
 ]
 
-labext_name = "run_and_reload"
+labext_name = "jupyterlab_run_and_reload"
 
 data_files_spec = [
     ("share/jupyter/labextensions/%s" % labext_name, str(lab_path.relative_to(HERE)), "**"),

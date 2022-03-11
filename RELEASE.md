@@ -1,4 +1,4 @@
-# Making a new release of run_and_reload
+# Making a new release of jupyterlab_run_and_reload
 
 The extension can be published to `PyPI` and `npm` manually or using the [Jupyter Releaser](https://github.com/jupyter-server/jupyter_releaser).
 

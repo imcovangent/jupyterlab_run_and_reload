@@ -1,6 +1,6 @@
 {
-  "title": "run_and_reload",
-  "description": "run_and_reload settings.",
+  "title": "jupyterlab_run_and_reload",
+  "description": "jupyterlab_run_and_reload settings.",
   "type": "object",
   "properties": {},
   "additionalProperties": false,
