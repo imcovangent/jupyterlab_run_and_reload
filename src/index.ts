@@ -18,6 +18,10 @@ import {
 
 import { Widget } from '@lumino/widgets';
 
+import { LabIcon } from '@jupyterlab/ui-components';
+
+import playInFileIconStr from '../style/play-in-file.svg';
+
 namespace CommandIDs {
   export const reloadAll = 'run-and-reload:run-all-cells-and-reload';
 }
@@ -51,19 +55,31 @@ const plugin: JupyterFrontEndPlugin<void> = {
       settingRegistry
         .load(plugin.id)
         .then(settings => {
-          console.log('jupyterlab_run_and_reload settings loaded:', settings.composite);
+          console.log(
+            'jupyterlab_run_and_reload settings loaded:',
+            settings.composite
+          );
         })
         .catch(reason => {
-          console.error('Failed to load settings for jupyterlab_run_and_reload.', reason);
+          console.error(
+            'Failed to load settings for jupyterlab_run_and_reload.',
+            reason
+          );
         });
     }
 
     const { shell, commands } = app;
 
+    const icon = new LabIcon({
+      name: 'notebook:play-in-file-icon',
+      svgstr: playInFileIconStr
+    });
+
     commands.addCommand(CommandIDs.reloadAll, {
       label: 'Run All Cells and Reload PDFs',
       caption:
-        'Reload all static files after your notebook is finished running all cells.',
+        'Run all the cells of the notebook and then reload static content that has changed (e.g. PDF).',
+      icon: args => (args['ignoreIcon'] ? undefined : icon),
       isEnabled: () => shell.currentWidget instanceof NotebookPanel,
       execute: async () => {
         // Get currently selected widget
@@ -116,7 +132,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     if (palette) {
       palette.addItem({
         command: CommandIDs.reloadAll,
-        args: { isPalette: true },
+        args: { ignoreIcon: true },
         category: PALETTE_CATEGORY
       });
     }

@@ -9,6 +9,9 @@ jupyterlab_run_and_reload/labextension
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
 
+### VS code ###
+.vscode/
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/

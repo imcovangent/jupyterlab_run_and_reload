@@ -18,10 +18,16 @@
         "items": [
           {
             "command": "run-and-reload:run-all-cells-and-reload",
-            "rank": 300
+            "rank": 300,
+            "args": { "ignoreIcon": true }
           }
         ]
       }
+    ]
+  },
+  "jupyter.lab.toolbars": {
+    "Notebook": [ 
+      { "name": "Run all celss and reload", "command": "run-and-reload:run-all-cells-and-reload" }
     ]
   }
 }
