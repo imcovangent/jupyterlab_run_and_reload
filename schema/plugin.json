@@ -9,6 +9,11 @@
       "command": "run-and-reload:run-all-cells-and-reload",
       "keys": ["Accel Shift D"],
       "selector": ".jp-Notebook"
+    },
+    {
+      "command": "run-and-reload:restart-run-all-cells-and-reload",
+      "keys": ["Accel Shift Alt D"],
+      "selector": ".jp-Notebook"
     }
   ],
   "jupyter.lab.menus": {
@@ -18,10 +23,31 @@
         "items": [
           {
             "command": "run-and-reload:run-all-cells-and-reload",
-            "rank": 300
+            "rank": 300,
+            "args": { "ignoreIcon": true }
+          }
+        ]
+      },
+      {
+        "id": "jp-mainmenu-run",
+        "items": [
+          {
+            "command": "run-and-reload:restart-run-all-cells-and-reload",
+            "rank": 320,
+            "args": { "ignoreIcon": true }
           }
         ]
       }
+    ]
+  },
+  "jupyter.lab.toolbars": {
+    "Notebook": [ 
+      { "name": "Run all cells and reload", 
+        "command": "run-and-reload:run-all-cells-and-reload",
+        "rank": 30 },
+      { "name": "Restart kernel run all cells and reload", 
+        "command": "run-and-reload:restart-run-all-cells-and-reload",
+        "rank": 35 }
     ]
   }
 }
