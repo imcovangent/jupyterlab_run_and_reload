@@ -27,7 +27,9 @@
   },
   "jupyter.lab.toolbars": {
     "Notebook": [ 
-      { "name": "Run all celss and reload", "command": "run-and-reload:run-all-cells-and-reload" }
+      { "name": "Run all celss and reload", 
+        "command": "run-and-reload:run-all-cells-and-reload",
+        "rank": 30 }
     ]
   }
 }
