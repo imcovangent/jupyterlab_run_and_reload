@@ -115,7 +115,7 @@ dmypy.json
 .DS_Store
 
 # Virtual environment
-.venv/
+.venv*/
 
 # Pylatex related files
 *.pdf
