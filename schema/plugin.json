@@ -1,18 +1,31 @@
 {
-  "title": "jupyterlab_run_and_reload",
-  "description": "jupyterlab_run_and_reload settings.",
+  "title": "Run and reload",
+  "description": "Add buttons to the notebook that runs all cells and reloads files.",
   "type": "object",
-  "properties": {},
+  "properties": {
+    "saveBeforeRun": {
+      "type": "boolean",
+      "title": "Save before running?",
+      "description": "Should the notebook be saved before all cells are run?",
+      "default": true
+    },
+    "saveAfterRun": {
+      "type": "boolean",
+      "title": "Save after running?",
+      "description": "Should the notebook be saved after all cells are run?",
+      "default": true
+    }
+  },
   "additionalProperties": false,
   "jupyter.lab.shortcuts": [
     {
       "command": "run-and-reload:run-all-cells-and-reload",
-      "keys": ["Accel Shift D"],
+      "keys": ["Accel D"],
       "selector": ".jp-Notebook"
     },
     {
       "command": "run-and-reload:restart-run-all-cells-and-reload",
-      "keys": ["Accel Shift Alt D"],
+      "keys": ["Accel Shift D"],
       "selector": ".jp-Notebook"
     }
   ],

@@ -42,8 +42,8 @@ const PALETTE_CATEGORY = 'Run and reload extension';
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'jupyterlab_run_and_reload:plugin',
   autoStart: true,
-  requires: [IDocumentManager],
-  optional: [ISettingRegistry, ICommandPalette],
+  requires: [IDocumentManager, ISettingRegistry],
+  optional: [ICommandPalette],
   activate: (
     app: JupyterFrontEnd,
     manager: IDocumentManager,
@@ -51,6 +51,19 @@ const plugin: JupyterFrontEndPlugin<void> = {
     palette: ICommandPalette | null
   ) => {
     console.log('JupyterLab extension jupyterlab_run_and_reload is activated!');
+
+    let saveBeforeRun = true;
+    let saveAfterRun = true;
+
+    function loadSetting(setting: ISettingRegistry.ISettings): void {
+      // Read the settings and convert to the correct type
+      saveBeforeRun = setting.get('saveBeforeRun').composite as boolean;
+      saveAfterRun = setting.get('saveAfterRun').composite as boolean;
+
+      console.log(
+        `Run and reload extension settings: saveBeforeRun is set to '${saveBeforeRun}' and saveAfterRun to '${saveAfterRun}'`
+      );
+    }
 
     if (settingRegistry) {
       settingRegistry
@@ -60,6 +73,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             'jupyterlab_run_and_reload settings loaded:',
             settings.composite
           );
+          settings.changed.connect(loadSetting);
         })
         .catch(reason => {
           console.error(
@@ -123,12 +137,20 @@ const plugin: JupyterFrontEndPlugin<void> = {
           } else {
             restarted = true;
           }
+
           // TODO: Add check on result + notification if notebook run was not successfull
           if (restarted) {
+            const currentContext = manager.contextForWidget(currentWidget);
+            if (saveBeforeRun) {
+              currentContext?.save();
+            }
             await NotebookActions.runAll(
               currentWidget.content,
               currentWidget.sessionContext
             );
+            if (saveAfterRun) {
+              currentContext?.save();
+            }
           }
 
           // Loop over all widgets in the shell and revert the relevant ones
