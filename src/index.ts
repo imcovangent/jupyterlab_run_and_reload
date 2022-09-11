@@ -142,16 +142,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
           if (restarted) {
             const currentContext = manager.contextForWidget(currentWidget);
             if (saveBeforeRun) {
-              if (currentContext) {
-                currentContext.save();
-              }
+              currentContext?.save();
             }
             await NotebookActions.runAll(
               currentWidget.content,
               currentWidget.sessionContext
             );
-            if (currentContext && saveAfterRun) {
-              currentContext.save();
+            if (saveAfterRun) {
+              currentContext?.save();
             }
           }
 
