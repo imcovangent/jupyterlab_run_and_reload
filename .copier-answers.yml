@@ -1,0 +1,15 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v4.3.8
+_src_path: https://github.com/jupyterlab/extension-template
+author_email: imcovangent@gmail.com
+author_name: Imco van Gent
+has_binder: true
+has_settings: true
+kind: frontend
+labextension_name: jupyterlab_run_and_reload
+project_short_description: A JupyterLab extension to run all notebook cells and reload
+    static content (e.g. PDF).
+python_name: jupyterlab_run_and_reload
+repository: https://github.com/imcovangent/jupyterlab_run_and_reload.git
+test: false
+
