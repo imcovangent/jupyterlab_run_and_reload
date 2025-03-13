@@ -41,13 +41,17 @@
     ]
   },
   "jupyter.lab.toolbars": {
-    "Notebook": [ 
-      { "name": "Run all cells and reload", 
+    "Notebook": [
+      {
+        "name": "Run all cells and reload",
         "command": "run-and-reload:run-all-cells-and-reload",
-        "rank": 30 },
-      { "name": "Restart kernel run all cells and reload", 
+        "rank": 30
+      },
+      {
+        "name": "Restart kernel run all cells and reload",
         "command": "run-and-reload:restart-run-all-cells-and-reload",
-        "rank": 35 }
+        "rank": 35
+      }
     ]
   }
 }
