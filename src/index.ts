@@ -14,6 +14,8 @@ import { NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
 
 import { Widget } from '@lumino/widgets';
 
+import { DocumentRegistry } from '@jupyterlab/docregistry';
+
 import { LabIcon } from '@jupyterlab/ui-components';
 
 import playInFileIconStr from '../style/play-in-file.svg';
@@ -29,6 +31,126 @@ namespace CommandIDs {
 
 // TODO: Change category to run items
 const PALETTE_CATEGORY = 'Run and reload extension';
+
+// Default settings, kept in sync with schema/plugin.json.
+const DEFAULT_AUTO_RELOAD_ENABLED = true;
+const DEFAULT_AUTO_RELOAD_INTERVAL_MS = 1500;
+const MIN_AUTO_RELOAD_INTERVAL_MS = 250;
+
+/**
+ * Watches every open PDF viewer and reverts it whenever its file changes on
+ * disk, no matter what caused the change (this extension's own command, an
+ * MCP / coding agent running the notebook headlessly, a terminal, cron, ...).
+ *
+ * The extension command reaches into the browser to reload PDFs, but a headless
+ * MCP run of the notebook has no browser handle and cannot do that. Detecting
+ * the change on disk instead keeps the reload decoupled from whatever triggered
+ * the regeneration, so both paths (and any other) work with no coupling.
+ *
+ * Detection is a periodic poll of each open PDF's `last_modified` via the
+ * contents API rather than the context's `fileChanged` signal: a PDF that is
+ * only being viewed (not edited) does not otherwise poll itself, so the signal
+ * would not fire on an out-of-band regeneration.
+ */
+class PdfAutoReloader {
+  constructor(shell: JupyterFrontEnd.IShell, manager: IDocumentManager) {
+    this._shell = shell;
+    this._manager = manager;
+  }
+
+  /** Apply settings; (re)starts or stops the poll loop as needed. */
+  configure(enabled: boolean, intervalMs: number): void {
+    this._enabled = enabled;
+    this._intervalMs = Math.max(MIN_AUTO_RELOAD_INTERVAL_MS, intervalMs);
+    this._stopTimer();
+    if (this._enabled) {
+      this._timer = window.setInterval(() => {
+        void this._tick();
+      }, this._intervalMs);
+    }
+  }
+
+  private _stopTimer(): void {
+    if (this._timer !== null) {
+      window.clearInterval(this._timer);
+      this._timer = null;
+    }
+  }
+
+  /** One poll cycle: discover open PDFs, then reload any that changed. */
+  private async _tick(): Promise<void> {
+    // Discover currently open PDF contexts and record a baseline mtime for any
+    // we have not seen before (without reloading on first sight).
+    const openContexts = new Set<DocumentRegistry.Context>();
+    for (const widget of toArray(this._shell.widgets())) {
+      const context = this._manager.contextForWidget(widget);
+      if (!context || !context.path.endsWith('.pdf')) {
+        continue;
+      }
+      openContexts.add(context);
+      if (!this._known.has(context)) {
+        this._known.set(context, {
+          lastModified: context.contentsModel?.last_modified ?? null,
+          reverting: false
+        });
+      }
+    }
+
+    // Drop contexts whose widget is no longer open.
+    for (const context of this._known.keys()) {
+      if (!openContexts.has(context)) {
+        this._known.delete(context);
+      }
+    }
+
+    // Check each open PDF for an on-disk change and revert if needed.
+    await Promise.all(
+      Array.from(openContexts).map(context => this._maybeReload(context))
+    );
+  }
+
+  private async _maybeReload(context: DocumentRegistry.Context): Promise<void> {
+    const state = this._known.get(context);
+    if (!state || state.reverting) {
+      return;
+    }
+    let lastModified: string;
+    try {
+      const model = await this._manager.services.contents.get(context.path, {
+        content: false
+      });
+      lastModified = model.last_modified;
+    } catch {
+      // File may have been deleted or is temporarily unreadable; skip this tick.
+      return;
+    }
+    if (state.lastModified === null) {
+      state.lastModified = lastModified;
+      return;
+    }
+    if (lastModified !== state.lastModified) {
+      state.lastModified = lastModified;
+      state.reverting = true;
+      try {
+        await context.revert();
+      } catch {
+        // Ignore; a later tick will retry if the file changes again.
+      } finally {
+        state.reverting = false;
+      }
+    }
+  }
+
+  private _shell: JupyterFrontEnd.IShell;
+  private _manager: IDocumentManager;
+  private _enabled = false;
+  private _intervalMs = DEFAULT_AUTO_RELOAD_INTERVAL_MS;
+  private _timer: number | null = null;
+  private _known = new Map<
+    DocumentRegistry.Context,
+    { lastModified: string | null; reverting: boolean }
+  >();
+}
 
 /**
  * Initialization data for the jupyterlab_run_and_reload extension.
@@ -52,7 +174,27 @@ const plugin: JupyterFrontEndPlugin<void> = {
   ) => {
     console.log('JupyterLab extension jupyterlab_run_and_reload is activated!');
 
+    const { shell, commands } = app;
+
+    // Auto-reload open PDFs when their file changes on disk. This is what makes
+    // headless notebook runs (e.g. via the Jupyter MCP / coding agents) refresh
+    // open PDFs too, without any coupling to how the run was triggered.
+    const autoReloader = new PdfAutoReloader(shell, manager);
+    autoReloader.configure(
+      DEFAULT_AUTO_RELOAD_ENABLED,
+      DEFAULT_AUTO_RELOAD_INTERVAL_MS
+    );
+
     if (settingRegistry) {
+      const applySettings = (settings: ISettingRegistry.ISettings) => {
+        const enabled = settings.get('autoReloadEnabled').composite as boolean;
+        const intervalMs = settings.get('autoReloadIntervalMs')
+          .composite as number;
+        autoReloader.configure(
+          enabled ?? DEFAULT_AUTO_RELOAD_ENABLED,
+          intervalMs ?? DEFAULT_AUTO_RELOAD_INTERVAL_MS
+        );
+      };
       settingRegistry
         .load(plugin.id)
         .then(settings => {
@@ -60,6 +202,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
             'jupyterlab_run_and_reload settings loaded:',
             settings.composite
           );
+          applySettings(settings);
+          settings.changed.connect(applySettings);
         })
         .catch(reason => {
           console.error(
@@ -68,8 +212,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
           );
         });
     }
-
-    const { shell, commands } = app;
 
     const icon = new LabIcon({
       name: 'run-and-reload:play-in-file-icon',

@@ -2,7 +2,21 @@
   "title": "jupyterlab_run_and_reload",
   "description": "jupyterlab_run_and_reload settings.",
   "type": "object",
-  "properties": {},
+  "properties": {
+    "autoReloadEnabled": {
+      "type": "boolean",
+      "title": "Auto-reload open PDFs on disk change",
+      "description": "When enabled, any open PDF viewer is automatically reloaded whenever its file changes on disk, regardless of what triggered the change (this command, an MCP/coding agent, a terminal, etc.).",
+      "default": true
+    },
+    "autoReloadIntervalMs": {
+      "type": "number",
+      "title": "Auto-reload poll interval (ms)",
+      "description": "How often to check open PDFs for on-disk changes, in milliseconds.",
+      "minimum": 250,
+      "default": 1500
+    }
+  },
   "additionalProperties": false,
   "jupyter.lab.shortcuts": [
     {

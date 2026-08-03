@@ -58,6 +58,7 @@
     "dependencies": {
         "@jupyterlab/application": "^4.3.5",
         "@jupyterlab/docmanager": "^4.3.5",
+        "@jupyterlab/docregistry": "^4.3.5",
         "@jupyterlab/launcher": "^4.3.5",
         "@jupyterlab/notebook": "^4.3.5",
         "@jupyterlab/settingregistry": "^4.3.5"
