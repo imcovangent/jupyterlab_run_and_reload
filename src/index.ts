@@ -51,6 +51,11 @@ const MIN_AUTO_RELOAD_INTERVAL_MS = 250;
  * contents API rather than the context's `fileChanged` signal: a PDF that is
  * only being viewed (not edited) does not otherwise poll itself, so the signal
  * would not fire on an out-of-band regeneration.
+ *
+ * After reverting, the tab is activated. A hidden PDF tab does not re-render on
+ * revert while it is not the visible tab, so activating it both surfaces the
+ * updated document and forces the render. Widgets (not just contexts) are
+ * tracked so each open tab has a handle to activate.
  */
 class PdfAutoReloader {
   constructor(shell: JupyterFrontEnd.IShell, manager: IDocumentManager) {
@@ -77,48 +82,50 @@ class PdfAutoReloader {
     }
   }
 
-  /** One poll cycle: discover open PDFs, then reload any that changed. */
+  /** One poll cycle: discover open PDF tabs, then reload any that changed. */
   private async _tick(): Promise<void> {
-    // Discover currently open PDF contexts and record a baseline mtime for any
-    // we have not seen before (without reloading on first sight).
-    const openContexts = new Set<DocumentRegistry.Context>();
+    // Discover currently open PDF tabs (including hidden ones) and record a
+    // baseline mtime for any we have not seen before (no reload on first sight).
+    const openWidgets = new Set<Widget>();
     for (const widget of toArray(this._shell.widgets())) {
       const context = this._manager.contextForWidget(widget);
       if (!context || !context.path.endsWith('.pdf')) {
         continue;
       }
-      openContexts.add(context);
-      if (!this._known.has(context)) {
-        this._known.set(context, {
+      openWidgets.add(widget);
+      if (!this._known.has(widget)) {
+        this._known.set(widget, {
+          context,
           lastModified: context.contentsModel?.last_modified ?? null,
           reverting: false
         });
       }
     }
 
-    // Drop contexts whose widget is no longer open.
-    for (const context of this._known.keys()) {
-      if (!openContexts.has(context)) {
-        this._known.delete(context);
+    // Drop tabs that are no longer open.
+    for (const widget of this._known.keys()) {
+      if (!openWidgets.has(widget)) {
+        this._known.delete(widget);
       }
     }
 
-    // Check each open PDF for an on-disk change and revert if needed.
+    // Check each open PDF for an on-disk change and reload it if needed.
     await Promise.all(
-      Array.from(openContexts).map(context => this._maybeReload(context))
+      Array.from(openWidgets).map(widget => this._maybeReload(widget))
     );
   }
 
-  private async _maybeReload(context: DocumentRegistry.Context): Promise<void> {
-    const state = this._known.get(context);
+  private async _maybeReload(widget: Widget): Promise<void> {
+    const state = this._known.get(widget);
     if (!state || state.reverting) {
       return;
     }
     let lastModified: string;
     try {
-      const model = await this._manager.services.contents.get(context.path, {
-        content: false
-      });
+      const model = await this._manager.services.contents.get(
+        state.context.path,
+        { content: false }
+      );
       lastModified = model.last_modified;
     } catch {
       // File may have been deleted or is temporarily unreadable; skip this tick.
@@ -132,7 +139,10 @@ class PdfAutoReloader {
       state.lastModified = lastModified;
       state.reverting = true;
       try {
-        await context.revert();
+        await state.context.revert();
+        // Activate the tab so a hidden PDF actually re-renders (and the view
+        // switches to it). Activating the already-visible tab is a no-op.
+        this._shell.activateById(widget.id);
       } catch {
         // Ignore; a later tick will retry if the file changes again.
       } finally {
@@ -147,8 +157,12 @@ class PdfAutoReloader {
   private _intervalMs = DEFAULT_AUTO_RELOAD_INTERVAL_MS;
   private _timer: number | null = null;
   private _known = new Map<
-    DocumentRegistry.Context,
-    { lastModified: string | null; reverting: boolean }
+    Widget,
+    {
+      context: DocumentRegistry.Context;
+      lastModified: string | null;
+      reverting: boolean;
+    }
   >();
 }
 
