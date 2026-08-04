@@ -1,6 +1,6 @@
-{% set pkg = load_file_data("../package.json") %}
-{% set name = pkg.get("name") %}
-{% set version = pkg.get("version") %}
+{% set name = "jupyterlab_run_and_reload" %}
+# NOTE: keep `version` in sync with the version in package.json on every release.
+{% set version = "4.1.0" %}
 {% set python_min = "3.9" %}
 
 package:
