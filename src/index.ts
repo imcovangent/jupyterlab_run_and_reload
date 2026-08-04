@@ -230,13 +230,18 @@ const plugin: JupyterFrontEndPlugin<void> = {
     // Just run all cells: reloading of open PDFs is now handled automatically
     // by the PdfAutoReloader watcher when the files change on disk, so this
     // command no longer needs to find and revert PDF widgets itself.
+    //
+    // Use runCells rather than runAll: runAll moves the active cell to the last
+    // cell and scrolls there, which is jarring. runCells runs every cell while
+    // preserving the current selection and scroll position (cf. PR #15).
     async function runAllCells(): Promise<void> {
       const currentWidget = shell.currentWidget;
       if (!(currentWidget instanceof NotebookPanel)) {
         return;
       }
-      await NotebookActions.runAll(
+      await NotebookActions.runCells(
         currentWidget.content,
+        currentWidget.content.widgets,
         currentWidget.sessionContext
       );
     }
