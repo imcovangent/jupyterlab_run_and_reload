@@ -1,0 +1,48 @@
+{% set name = "jupyterlab_run_and_reload" %}
+{% set version = "4.1.0" %}
+{% set python_min = "3.9" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  path: ../
+
+build:
+  noarch: python
+  script: {{ PYTHON }} -m pip install . -vv
+  number: 0
+
+requirements:
+  host:
+    - hatch-jupyter-builder >=0.5
+    - hatch-nodejs-version >=0.3.2
+    - hatchling >=1.5.0
+    - jupyterlab =4
+    - pip
+    - python {{ python_min }}
+  run:
+    - python >={{ python_min }},<4.0
+  run_constrained:
+    - jupyterlab >=4,<5
+
+test:
+  requires:
+    - jupyterlab =4
+    - pip
+    - python {{ python_min }}
+  commands:
+    - pip check
+    - jupyter labextension list 2>&1 | grep -ie "jupyterlab_run_and_reload.*OK"
+
+about:
+  home: https://github.com/imcovangent/jupyterlab_run_and_reload
+  summary: 'JupyterLab extension to run all notebook cells and reload external widgets (e.g. PDF documents)'
+  license: BSD-3-Clause
+  license_family: BSD
+  license_file: LICENSE
+
+extra:
+  recipe-maintainers:
+    - imcovangent
