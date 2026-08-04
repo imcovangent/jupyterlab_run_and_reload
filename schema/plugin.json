@@ -12,9 +12,16 @@
     "autoReloadIntervalMs": {
       "type": "number",
       "title": "Auto-reload poll interval (ms)",
-      "description": "How often to check open PDFs for on-disk changes, in milliseconds.",
+      "description": "How often to check open files for on-disk changes, in milliseconds.",
       "minimum": 250,
       "default": 1500
+    },
+    "watchedFileExtensions": {
+      "type": "array",
+      "title": "Watched file extensions",
+      "description": "File extensions whose open viewers are automatically reloaded when the file changes on disk. Include the leading dot, e.g. \".pdf\". Matching is case-insensitive.",
+      "items": { "type": "string" },
+      "default": [".pdf"]
     }
   },
   "additionalProperties": false,

@@ -11,12 +11,13 @@ This extension is motivated by the use of [pylatex](https://github.com/JelteF/Py
 
 ## Automatic PDF reload
 
-Any open PDF is reloaded automatically whenever its file changes on disk — regardless of what triggered the change: the command below, a headless notebook run (e.g. via the Jupyter MCP or a coding agent), a terminal, a cron job, etc. A PDF that changes is also brought to the front, so a PDF open in a background tab is reloaded and activated.
+Any open file with a watched extension (PDFs by default) is reloaded automatically whenever its file changes on disk — regardless of what triggered the change: the command below, a headless notebook run (e.g. via the Jupyter MCP or a coding agent), a terminal, a cron job, etc. A file that changes is also brought to the front, so one open in a background tab is reloaded and activated.
 
-This behaviour is controlled by two settings (Settings → Settings Editor → *jupyterlab_run_and_reload*):
+This behaviour is controlled by three settings (Settings → Settings Editor → *jupyterlab_run_and_reload*):
 
 - `autoReloadEnabled` (default `true`) — enable or disable the automatic reload.
-- `autoReloadIntervalMs` (default `1500`) — how often, in milliseconds, open PDFs are checked for on-disk changes.
+- `autoReloadIntervalMs` (default `1500`) — how often, in milliseconds, open files are checked for on-disk changes.
+- `watchedFileExtensions` (default `[".pdf"]`) — the file extensions to watch. Include the leading dot (e.g. `".pdf"`); matching is case-insensitive. Add more (e.g. `".png"`, `".svg"`) to auto-reload other viewers too.
 
 ## Command
 

@@ -31,23 +31,27 @@ const PALETTE_CATEGORY = 'Run and reload extension';
 const DEFAULT_AUTO_RELOAD_ENABLED = true;
 const DEFAULT_AUTO_RELOAD_INTERVAL_MS = 1500;
 const MIN_AUTO_RELOAD_INTERVAL_MS = 250;
+const DEFAULT_WATCHED_EXTENSIONS = ['.pdf'];
 
 /**
- * Watches every open PDF viewer and reverts it whenever its file changes on
- * disk, no matter what caused the change (this extension's own command, an
- * MCP / coding agent running the notebook headlessly, a terminal, cron, ...).
+ * Watches every open viewer whose file has a watched extension (PDFs by
+ * default; configurable via the `watchedFileExtensions` setting) and reverts it
+ * whenever its file changes on disk, no matter what caused the change (this
+ * extension's own command, an MCP / coding agent running the notebook
+ * headlessly, a terminal, cron, ...).
  *
- * The extension command reaches into the browser to reload PDFs, but a headless
- * MCP run of the notebook has no browser handle and cannot do that. Detecting
- * the change on disk instead keeps the reload decoupled from whatever triggered
- * the regeneration, so both paths (and any other) work with no coupling.
+ * The extension command reaches into the browser to reload files, but a
+ * headless MCP run of the notebook has no browser handle and cannot do that.
+ * Detecting the change on disk instead keeps the reload decoupled from whatever
+ * triggered the regeneration, so both paths (and any other) work with no
+ * coupling.
  *
- * Detection is a periodic poll of each open PDF's `last_modified` via the
- * contents API rather than the context's `fileChanged` signal: a PDF that is
+ * Detection is a periodic poll of each open file's `last_modified` via the
+ * contents API rather than the context's `fileChanged` signal: a file that is
  * only being viewed (not edited) does not otherwise poll itself, so the signal
  * would not fire on an out-of-band regeneration.
  *
- * After reverting, the tab is activated. A hidden PDF tab does not re-render on
+ * After reverting, the tab is activated. A hidden tab does not re-render on
  * revert while it is not the visible tab, so activating it both surfaces the
  * updated document and forces the render. Widgets (not just contexts) are
  * tracked so each open tab has a handle to activate.
@@ -59,15 +63,33 @@ class PdfAutoReloader {
   }
 
   /** Apply settings; (re)starts or stops the poll loop as needed. */
-  configure(enabled: boolean, intervalMs: number): void {
+  configure(enabled: boolean, intervalMs: number, extensions: string[]): void {
     this._enabled = enabled;
     this._intervalMs = Math.max(MIN_AUTO_RELOAD_INTERVAL_MS, intervalMs);
+    this._extensions = PdfAutoReloader.normalizeExtensions(extensions);
     this._stopTimer();
     if (this._enabled) {
       this._timer = window.setInterval(() => {
         void this._tick();
       }, this._intervalMs);
     }
+  }
+
+  /** Lower-case each extension and ensure a leading dot; drop blanks. */
+  private static normalizeExtensions(extensions: string[]): string[] {
+    const normalized: string[] = [];
+    for (const raw of extensions) {
+      const ext = raw.trim().toLowerCase();
+      if (ext) {
+        normalized.push(ext.startsWith('.') ? ext : `.${ext}`);
+      }
+    }
+    return normalized;
+  }
+
+  private _isWatched(path: string): boolean {
+    const lower = path.toLowerCase();
+    return this._extensions.some(ext => lower.endsWith(ext));
   }
 
   private _stopTimer(): void {
@@ -77,14 +99,14 @@ class PdfAutoReloader {
     }
   }
 
-  /** One poll cycle: discover open PDF tabs, then reload any that changed. */
+  /** One poll cycle: discover open watched tabs, then reload any that changed. */
   private async _tick(): Promise<void> {
-    // Discover currently open PDF tabs (including hidden ones) and record a
+    // Discover currently open watched tabs (including hidden ones) and record a
     // baseline mtime for any we have not seen before (no reload on first sight).
     const openWidgets = new Set<Widget>();
     for (const widget of toArray(this._shell.widgets())) {
       const context = this._manager.contextForWidget(widget);
-      if (!context || !context.path.endsWith('.pdf')) {
+      if (!context || !this._isWatched(context.path)) {
         continue;
       }
       openWidgets.add(widget);
@@ -104,7 +126,7 @@ class PdfAutoReloader {
       }
     }
 
-    // Check each open PDF for an on-disk change and reload it if needed.
+    // Check each open watched file for an on-disk change and reload if needed.
     await Promise.all(
       Array.from(openWidgets).map(widget => this._maybeReload(widget))
     );
@@ -135,7 +157,7 @@ class PdfAutoReloader {
       state.reverting = true;
       try {
         await state.context.revert();
-        // Activate the tab so a hidden PDF actually re-renders (and the view
+        // Activate the tab so a hidden file actually re-renders (and the view
         // switches to it). Activating the already-visible tab is a no-op.
         this._shell.activateById(widget.id);
       } catch {
@@ -150,6 +172,7 @@ class PdfAutoReloader {
   private _manager: IDocumentManager;
   private _enabled = false;
   private _intervalMs = DEFAULT_AUTO_RELOAD_INTERVAL_MS;
+  private _extensions = DEFAULT_WATCHED_EXTENSIONS;
   private _timer: number | null = null;
   private _known = new Map<
     Widget,
@@ -165,10 +188,7 @@ class PdfAutoReloader {
  * Initialization data for the jupyterlab_run_and_reload extension.
  *
  * TODOs:
- * - Add setting: file extensions to reload
  * - Add setting: only reload visible widgets or not
- * - Add toolbar button in notebook panel with run and reload
- * - Also add "Restart kernel, run all cells and reload PDFs"
  */
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'jupyterlab_run_and_reload:plugin',
@@ -191,7 +211,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const autoReloader = new PdfAutoReloader(shell, manager);
     autoReloader.configure(
       DEFAULT_AUTO_RELOAD_ENABLED,
-      DEFAULT_AUTO_RELOAD_INTERVAL_MS
+      DEFAULT_AUTO_RELOAD_INTERVAL_MS,
+      DEFAULT_WATCHED_EXTENSIONS
     );
 
     if (settingRegistry) {
@@ -199,9 +220,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
         const enabled = settings.get('autoReloadEnabled').composite as boolean;
         const intervalMs = settings.get('autoReloadIntervalMs')
           .composite as number;
+        const extensions = settings.get('watchedFileExtensions')
+          .composite as string[];
         autoReloader.configure(
           enabled ?? DEFAULT_AUTO_RELOAD_ENABLED,
-          intervalMs ?? DEFAULT_AUTO_RELOAD_INTERVAL_MS
+          intervalMs ?? DEFAULT_AUTO_RELOAD_INTERVAL_MS,
+          extensions ?? DEFAULT_WATCHED_EXTENSIONS
         );
       };
       settingRegistry
