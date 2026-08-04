@@ -19,7 +19,7 @@
     "watchedFileExtensions": {
       "type": "array",
       "title": "Watched file extensions",
-      "description": "File extensions whose open viewers are automatically reloaded when the file changes on disk. Include the leading dot, e.g. \".pdf\". Matching is case-insensitive.",
+      "description": "File extensions whose open viewers are automatically reloaded when the file changes on disk. Include the leading dot, e.g. \".pdf\". Matching is case-insensitive. Only use this for view-only or generated files: reloading reverts the open document from disk, so any unsaved edits to a watched file would be discarded.",
       "items": { "type": "string" },
       "default": [".pdf"]
     }

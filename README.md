@@ -19,6 +19,8 @@ This behaviour is controlled by three settings (Settings → Settings Editor →
 - `autoReloadIntervalMs` (default `1500`) — how often, in milliseconds, open files are checked for on-disk changes.
 - `watchedFileExtensions` (default `[".pdf"]`) — the file extensions to watch. Include the leading dot (e.g. `".pdf"`); matching is case-insensitive. Add more (e.g. `".png"`, `".svg"`) to auto-reload other viewers too.
 
+  > ⚠️ Only add extensions for view-only or generated files. Reloading reverts the open document from disk, so any **unsaved edits** to a watched file would be discarded. This is why the default is `.pdf` (a generated, non-edited output).
+
 ## Command
 
 The extension provides one command:
