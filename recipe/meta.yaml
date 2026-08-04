@@ -40,7 +40,7 @@ test:
 
 about:
   home: https://github.com/imcovangent/jupyterlab_run_and_reload
-  summary: 'JupyterLab extension to run all notebook cells and reload external widgets (e.g. PDF documents)'
+  summary: 'JupyterLab extension that runs all notebook cells and reloads open files (e.g. PDFs) when they change on disk'
   license: BSD-3-Clause
   license_family: BSD
   license_file: LICENSE

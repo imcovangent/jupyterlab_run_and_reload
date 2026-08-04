@@ -34,7 +34,7 @@ const MIN_AUTO_RELOAD_INTERVAL_MS = 250;
 const DEFAULT_WATCHED_EXTENSIONS = ['.pdf'];
 
 /**
- * Watches every open viewer whose file has a watched extension (PDFs by
+ * Watches every open viewer whose file has a watched extension (`.pdf` by
  * default; configurable via the `watchedFileExtensions` setting) and reverts it
  * whenever its file changes on disk, no matter what caused the change (this
  * extension's own command, an MCP / coding agent running the notebook
@@ -56,7 +56,7 @@ const DEFAULT_WATCHED_EXTENSIONS = ['.pdf'];
  * updated document and forces the render. Widgets (not just contexts) are
  * tracked so each open tab has a handle to activate.
  */
-class PdfAutoReloader {
+class FileAutoReloader {
   constructor(shell: JupyterFrontEnd.IShell, manager: IDocumentManager) {
     this._shell = shell;
     this._manager = manager;
@@ -66,7 +66,7 @@ class PdfAutoReloader {
   configure(enabled: boolean, intervalMs: number, extensions: string[]): void {
     this._enabled = enabled;
     this._intervalMs = Math.max(MIN_AUTO_RELOAD_INTERVAL_MS, intervalMs);
-    this._extensions = PdfAutoReloader.normalizeExtensions(extensions);
+    this._extensions = FileAutoReloader.normalizeExtensions(extensions);
     this._stopTimer();
     if (this._enabled) {
       this._timer = window.setInterval(() => {
@@ -205,10 +205,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     const { shell, commands } = app;
 
-    // Auto-reload open PDFs when their file changes on disk. This is what makes
+    // Auto-reload open files when they change on disk. This is what makes
     // headless notebook runs (e.g. via the Jupyter MCP / coding agents) refresh
-    // open PDFs too, without any coupling to how the run was triggered.
-    const autoReloader = new PdfAutoReloader(shell, manager);
+    // open files too, without any coupling to how the run was triggered.
+    const autoReloader = new FileAutoReloader(shell, manager);
     autoReloader.configure(
       DEFAULT_AUTO_RELOAD_ENABLED,
       DEFAULT_AUTO_RELOAD_INTERVAL_MS,
@@ -251,9 +251,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
       svgstr: playInFileIconStr
     });
 
-    // Just run all cells: reloading of open PDFs is now handled automatically
-    // by the PdfAutoReloader watcher when the files change on disk, so this
-    // command no longer needs to find and revert PDF widgets itself.
+    // Just run all cells: reloading of open files is now handled automatically
+    // by the FileAutoReloader watcher when the files change on disk, so this
+    // command no longer needs to find and revert file widgets itself.
     //
     // Use runCells rather than runAll: runAll moves the active cell to the last
     // cell and scrolls there, which is jarring. runCells runs every cell while
@@ -271,9 +271,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
     }
 
     commands.addCommand(CommandIDs.runAndReloadAll, {
-      label: 'Run All Cells and Reload PDFs',
+      label: 'Run All Cells and Reload Files',
       caption:
-        'Run all the cells of the notebook. Open PDFs are reloaded automatically when they change on disk.',
+        'Run all the cells of the notebook. Open files are reloaded automatically when they change on disk.',
       icon: args => (args['ignoreIcon'] ? undefined : icon),
       isEnabled: () => shell.currentWidget instanceof NotebookPanel,
       execute: runAllCells

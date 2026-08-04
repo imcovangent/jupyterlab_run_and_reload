@@ -1,7 +1,7 @@
 {
     "name": "jupyterlab_run_and_reload",
     "version": "4.1.0",
-    "description": "A JupyterLab extension to run all notebook cells and reload static content (e.g. PDF).",
+    "description": "A JupyterLab extension that runs all notebook cells and automatically reloads open files (e.g. PDFs) when they change on disk.",
     "keywords": [
         "jupyter",
         "jupyterlab",

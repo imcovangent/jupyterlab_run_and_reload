@@ -5,8 +5,8 @@
   "properties": {
     "autoReloadEnabled": {
       "type": "boolean",
-      "title": "Auto-reload open PDFs on disk change",
-      "description": "When enabled, any open PDF viewer is automatically reloaded whenever its file changes on disk, regardless of what triggered the change (this command, an MCP/coding agent, a terminal, etc.).",
+      "title": "Auto-reload open files on disk change",
+      "description": "When enabled, any open file viewer (of a watched extension) is automatically reloaded whenever its file changes on disk, regardless of what triggered the change (this command, an MCP/coding agent, a terminal, etc.).",
       "default": true
     },
     "autoReloadIntervalMs": {

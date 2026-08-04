@@ -3,17 +3,17 @@
 [![Github Actions Status](https://github.com/imcovangent/jupyterlab_run_and_reload.git/workflows/Build/badge.svg)](https://github.com/imcovangent/jupyterlab_run_and_reload.git/actions/workflows/build.yml)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/imcovangent/jupyterlab_run_and_reload.git/main?urlpath=lab)
 
-A JupyterLab extension that runs all notebook cells and automatically reloads open PDF viewers whenever their file changes on disk.
+A JupyterLab extension that runs all notebook cells and automatically reloads open file viewers whenever their file changes on disk (`.pdf` by default; configurable).
 
 This extension is motivated by the use of [pylatex](https://github.com/JelteF/PyLaTeX) in a notebook on Jupyter Lab. When you run a notebook that creates a PDF file, you normally have to manually reload the file if it is already open. With this extension the open PDF gets reloaded automatically. Like this:
 
 ![Demo run and reload GIF](https://github.com/imcovangent/jupyterlab_run_and_reload/blob/main/examples/demo_jupyterlab_run_and_reload.gif?raw=true)
 
-## Automatic PDF reload
+## Automatic file reload
 
-Any open file with a watched extension (PDFs by default) is reloaded automatically whenever its file changes on disk — regardless of what triggered the change: the command below, a headless notebook run (e.g. via the Jupyter MCP or a coding agent), a terminal, a cron job, etc. A file that changes is also brought to the front, so one open in a background tab is reloaded and activated.
+Any open file with a watched extension (`.pdf` by default) is reloaded automatically whenever its file changes on disk — regardless of what triggered the change: the command below, a headless notebook run (e.g. via the Jupyter MCP or a coding agent), a terminal, a cron job, etc. A file that changes is also brought to the front, so one open in a background tab is reloaded and activated.
 
-This behaviour is controlled by three settings (Settings → Settings Editor → *jupyterlab_run_and_reload*):
+This behaviour is controlled by three settings (Settings → Settings Editor → _jupyterlab_run_and_reload_):
 
 - `autoReloadEnabled` (default `true`) — enable or disable the automatic reload.
 - `autoReloadIntervalMs` (default `1500`) — how often, in milliseconds, open files are checked for on-disk changes.
@@ -25,7 +25,7 @@ This behaviour is controlled by three settings (Settings → Settings Editor →
 
 The extension provides one command:
 
-- **"Run all cells and reload PDFs"** — runs every cell of the active notebook, keeping your current selection and scroll position. Open PDFs are then reloaded automatically as described above.
+- **"Run All Cells and Reload Files"** — runs every cell of the active notebook, keeping your current selection and scroll position. Open files are then reloaded automatically as described above.
 
 The command is available in a notebook in multiple places:
 
