@@ -19,14 +19,9 @@ import { DocumentRegistry } from '@jupyterlab/docregistry';
 import { LabIcon } from '@jupyterlab/ui-components';
 
 import playInFileIconStr from '../style/play-in-file.svg';
-import fastforwardInFileIconStr from '../style/fastforward-in-file.svg';
 
 namespace CommandIDs {
   export const runAndReloadAll = 'run-and-reload:run-all-cells-and-reload';
-  export const restartRunAndReloadAll =
-    'run-and-reload:restart-run-all-cells-and-reload';
-  // TODO: Import this from notebook extension
-  export const restart = 'notebook:restart-kernel';
 }
 
 // TODO: Change category to run items
@@ -232,98 +227,33 @@ const plugin: JupyterFrontEndPlugin<void> = {
       svgstr: playInFileIconStr
     });
 
-    const icon2 = new LabIcon({
-      name: 'run-and-reload:fastforward-in-file-icon',
-      svgstr: fastforwardInFileIconStr
-    });
-
-    function commandExecutionFunction(withRestart: boolean) {
-      async function executeCommand() {
-        // Get currently selected widget
-        const currentWidget = shell.currentWidget;
-
-        // If current widget is a notebook then we can run all cells
-        // If not, then this command does not make sense and should not be callable actually
-        if (!(currentWidget instanceof NotebookPanel)) {
-          return;
-        }
-
-        function widgetShouldReload(widget: Widget) {
-          const context = manager.contextForWidget(widget);
-          return context?.path.endsWith('.pdf');
-        }
-
-        // Get all attached widgets in the shell
-        const currentWidgets = toArray(shell.widgets());
-
-        // Obtain the list of widgets that might need to be reloaded after the notebook is finished
-        const widgetsToReload = currentWidgets.filter(widgetShouldReload);
-        const contextsToReload = widgetsToReload.map(widget =>
-          manager.contextForWidget(widget)
-        );
-
-        // Connect the openOrReveal function to the fileChanged signal of the relevant widgets
-        contextsToReload.forEach(context => {
-          context?.fileChanged.connect((context, model) => {
-            manager.openOrReveal(context.path);
-          });
-        });
-
-        // If current widget is a notebook then we can run all cells
-        if (currentWidget instanceof NotebookPanel) {
-          let restarted: boolean;
-          if (withRestart) {
-            restarted = await commands.execute(CommandIDs.restart, {
-              activate: false
-            });
-          } else {
-            restarted = true;
-          }
-          // TODO: Add check on result + notification if notebook run was not successfull
-          if (restarted) {
-            await NotebookActions.runAll(
-              currentWidget.content,
-              currentWidget.sessionContext
-            );
-          }
-
-          // Loop over all widgets in the shell and revert the relevant ones
-          for (const context of contextsToReload) {
-            context?.revert();
-          }
-        }
+    // Just run all cells: reloading of open PDFs is now handled automatically
+    // by the PdfAutoReloader watcher when the files change on disk, so this
+    // command no longer needs to find and revert PDF widgets itself.
+    async function runAllCells(): Promise<void> {
+      const currentWidget = shell.currentWidget;
+      if (!(currentWidget instanceof NotebookPanel)) {
+        return;
       }
-      return executeCommand;
+      await NotebookActions.runAll(
+        currentWidget.content,
+        currentWidget.sessionContext
+      );
     }
 
     commands.addCommand(CommandIDs.runAndReloadAll, {
       label: 'Run All Cells and Reload PDFs',
       caption:
-        'Run all the cells of the notebook and then reload static content that has changed (e.g. PDF).',
+        'Run all the cells of the notebook. Open PDFs are reloaded automatically when they change on disk.',
       icon: args => (args['ignoreIcon'] ? undefined : icon),
       isEnabled: () => shell.currentWidget instanceof NotebookPanel,
-      execute: commandExecutionFunction(false)
-    });
-
-    commands.addCommand(CommandIDs.restartRunAndReloadAll, {
-      label: 'Restart Kernel, Run All Cells and Reload PDFs',
-      caption:
-        'Restart the kernel, run all the cells of the notebook and then reload static content that has changed (e.g. PDF).',
-      icon: args => (args['ignoreIcon'] ? undefined : icon2),
-      isEnabled: () => shell.currentWidget instanceof NotebookPanel,
-      execute: commandExecutionFunction(true)
+      execute: runAllCells
     });
 
     // Add the command to the palette
     if (palette) {
       palette.addItem({
         command: CommandIDs.runAndReloadAll,
-        args: { ignoreIcon: true },
-        category: PALETTE_CATEGORY
-      });
-
-      palette.addItem({
-        command: CommandIDs.restartRunAndReloadAll,
         args: { ignoreIcon: true },
         category: PALETTE_CATEGORY
       });
