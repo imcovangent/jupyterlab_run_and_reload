@@ -3,22 +3,33 @@
 [![Github Actions Status](https://github.com/imcovangent/jupyterlab_run_and_reload.git/workflows/Build/badge.svg)](https://github.com/imcovangent/jupyterlab_run_and_reload.git/actions/workflows/build.yml)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/imcovangent/jupyterlab_run_and_reload.git/main?urlpath=lab)
 
-A JupyterLab extension to run all notebook cells and reload static content (e.g. PDF).
+A JupyterLab extension that runs all notebook cells and automatically reloads open PDF viewers whenever their file changes on disk.
 
-This extension is motivated by the use of [pylatex](https://github.com/JelteF/PyLaTeX) in a notebook on Jupyter Lab. When you run a notebook that creates a PDF file, you normally have to manually reload the file if it is already open. With this extension you can simply run your notebook and the PDF file gets reloaded automatically. Like this:
+This extension is motivated by the use of [pylatex](https://github.com/JelteF/PyLaTeX) in a notebook on Jupyter Lab. When you run a notebook that creates a PDF file, you normally have to manually reload the file if it is already open. With this extension the open PDF gets reloaded automatically. Like this:
 
 ![Demo run and reload GIF](https://github.com/imcovangent/jupyterlab_run_and_reload/blob/main/examples/demo_jupyterlab_run_and_reload.gif?raw=true)
 
-The extension provides two commands
+## Automatic PDF reload
 
-- "Run all cells and reload PDFs".
-- "Restart kernel, run all cells and reload PDFs."
+Any open PDF is reloaded automatically whenever its file changes on disk — regardless of what triggered the change: the command below, a headless notebook run (e.g. via the Jupyter MCP or a coding agent), a terminal, a cron job, etc. A PDF that changes is also brought to the front, so a PDF open in a background tab is reloaded and activated.
 
-This commands are available in a notebook in multiple places:
+This behaviour is controlled by two settings (Settings → Settings Editor → *jupyterlab_run_and_reload*):
 
-- Under the run menu
-- Under the keyboard shortcut ctrl + shift + D and ctrl + alt + shift + D respectively
-- In the command palette (ctrl + shift + C)
+- `autoReloadEnabled` (default `true`) — enable or disable the automatic reload.
+- `autoReloadIntervalMs` (default `1500`) — how often, in milliseconds, open PDFs are checked for on-disk changes.
+
+## Command
+
+The extension provides one command:
+
+- **"Run all cells and reload PDFs"** — runs every cell of the active notebook, keeping your current selection and scroll position. Open PDFs are then reloaded automatically as described above.
+
+The command is available in a notebook in multiple places:
+
+- In the notebook toolbar
+- Under the Run menu
+- Under the keyboard shortcut `Ctrl + Shift + D`
+- In the command palette (`Ctrl + Shift + C`)
 
 ## Requirements
 
