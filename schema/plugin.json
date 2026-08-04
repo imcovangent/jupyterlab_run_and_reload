@@ -2,17 +2,33 @@
   "title": "jupyterlab_run_and_reload",
   "description": "jupyterlab_run_and_reload settings.",
   "type": "object",
-  "properties": {},
+  "properties": {
+    "autoReloadEnabled": {
+      "type": "boolean",
+      "title": "Auto-reload open files on disk change",
+      "description": "When enabled, any open file viewer (of a watched extension) is automatically reloaded whenever its file changes on disk, regardless of what triggered the change (this command, an MCP/coding agent, a terminal, etc.).",
+      "default": true
+    },
+    "autoReloadIntervalMs": {
+      "type": "number",
+      "title": "Auto-reload poll interval (ms)",
+      "description": "How often to check open files for on-disk changes, in milliseconds.",
+      "minimum": 250,
+      "default": 1500
+    },
+    "watchedFileExtensions": {
+      "type": "array",
+      "title": "Watched file extensions",
+      "description": "File extensions whose open viewers are automatically reloaded when the file changes on disk. Include the leading dot, e.g. \".pdf\". Matching is case-insensitive. Only use this for view-only or generated files: reloading reverts the open document from disk, so any unsaved edits to a watched file would be discarded.",
+      "items": { "type": "string" },
+      "default": [".pdf"]
+    }
+  },
   "additionalProperties": false,
   "jupyter.lab.shortcuts": [
     {
       "command": "run-and-reload:run-all-cells-and-reload",
       "keys": ["Accel Shift D"],
-      "selector": ".jp-Notebook"
-    },
-    {
-      "command": "run-and-reload:restart-run-all-cells-and-reload",
-      "keys": ["Accel Shift Alt D"],
       "selector": ".jp-Notebook"
     }
   ],
@@ -27,16 +43,6 @@
             "args": { "ignoreIcon": true }
           }
         ]
-      },
-      {
-        "id": "jp-mainmenu-run",
-        "items": [
-          {
-            "command": "run-and-reload:restart-run-all-cells-and-reload",
-            "rank": 320,
-            "args": { "ignoreIcon": true }
-          }
-        ]
       }
     ]
   },
@@ -46,11 +52,6 @@
         "name": "Run all cells and reload",
         "command": "run-and-reload:run-all-cells-and-reload",
         "rank": 30
-      },
-      {
-        "name": "Restart kernel run all cells and reload",
-        "command": "run-and-reload:restart-run-all-cells-and-reload",
-        "rank": 35
       }
     ]
   }
