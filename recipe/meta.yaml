@@ -1,7 +1,12 @@
 {% set name = "jupyterlab_run_and_reload" %}
 # NOTE: keep `version` in sync with the version in package.json on every release.
 {% set version = "4.1.1" %}
-{% set python_min = "3.9" %}
+# 3.10 is the floor because hatch-jupyter-builder 0.10.0 (2026-09-18) raised its
+# own requirement to >=3.10 and uses `list | tuple` at runtime, which is a syntax
+# error on 3.9. Building on 3.9 fails in normalize_cmd with
+# "unsupported operand type(s) for |". The deployed environments are 3.10, so
+# this matches where the package is actually installed.
+{% set python_min = "3.10" %}
 
 package:
   name: {{ name|lower }}
