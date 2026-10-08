@@ -1,4 +1,5 @@
 import {
+  ILabShell,
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
@@ -194,12 +195,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
   id: 'jupyterlab_run_and_reload:plugin',
   autoStart: true,
   requires: [IDocumentManager],
-  optional: [ISettingRegistry, ICommandPalette],
+  optional: [ISettingRegistry, ICommandPalette, ILabShell],
   activate: (
     app: JupyterFrontEnd,
     manager: IDocumentManager,
     settingRegistry: ISettingRegistry | null,
-    palette: ICommandPalette | null
+    palette: ICommandPalette | null,
+    labShell: ILabShell | null
   ) => {
     console.log('JupyterLab extension jupyterlab_run_and_reload is activated!');
 
@@ -278,6 +280,28 @@ const plugin: JupyterFrontEndPlugin<void> = {
       isEnabled: () => shell.currentWidget instanceof NotebookPanel,
       execute: runAllCells
     });
+
+    // Keep the toolbar button's enabled state in step with the focused widget.
+    //
+    // `isEnabled` above is a function of `shell.currentWidget`, but the toolbar
+    // button caches what it returned and only re-renders when `commandChanged`
+    // fires - and changing focus emits no such signal. Without this the button
+    // is frozen at whatever the answer was when it first rendered, which during
+    // a workspace restore is while the notebook is still being constructed and
+    // is not yet the current widget: disabled, and never re-evaluated.
+    //
+    // The keyboard shortcut was never affected, because Lumino evaluates
+    // `isEnabled` afresh on each key press - which is why the command worked
+    // while its button looked dead.
+    //
+    // `currentChanged` lives on ILabShell rather than JupyterFrontEnd.IShell,
+    // so in a host that provides no lab shell (Notebook 7) this is skipped and
+    // the previous behaviour stands.
+    if (labShell) {
+      labShell.currentChanged.connect(() => {
+        commands.notifyCommandChanged(CommandIDs.runAndReloadAll);
+      });
+    }
 
     // Add the command to the palette
     if (palette) {

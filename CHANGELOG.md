@@ -1,5 +1,11 @@
 # Changelog
 
+v4.1.1
+
+- Fixed the "Run All Cells and Reload Files" toolbar button staying greyed out
+  after a workspace restore. The command itself was always available from the
+  keyboard shortcut; only the button's cached enabled state was stale.
+
 v4.0.0
 
 - Added support for JupyterLab 4
