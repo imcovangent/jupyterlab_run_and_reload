@@ -6,6 +6,20 @@ v4.1.1
   after a workspace restore. The command itself was always available from the
   keyboard shortcut; only the button's cached enabled state was stale.
 
+v4.1.0
+
+- Open files are now reloaded automatically when they change on disk, including
+  tabs that are not currently visible. Watched extensions are configurable and
+  default to `.pdf`.
+- Note that reloading a watched file discards unsaved edits to it.
+- "Run All Cells and Reload Files" now only runs the cells; reloading is handled
+  by the watcher.
+- Removed the "Restart Kernel, Run All Cells and Reload PDFs" command, which the
+  watcher makes redundant.
+- Running all cells no longer scrolls the notebook to the last cell.
+- Added a conda-build recipe, which takes its name and version from
+  `package.json`.
+
 v4.0.0
 
 - Added support for JupyterLab 4
