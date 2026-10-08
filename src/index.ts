@@ -303,6 +303,17 @@ const plugin: JupyterFrontEndPlugin<void> = {
       });
     }
 
+    // `currentChanged` alone is not enough after a workspace restore. The
+    // toolbar is built while the notebook is still being restored, so the
+    // button's first evaluation is `false`, and no focus change follows to
+    // correct it - the notebook is already the current widget, exactly where
+    // the user left it. Without this the button stays greyed out until the
+    // user clicks into the notebook, which is what made it look permanently
+    // disabled.
+    void app.restored.then(() => {
+      commands.notifyCommandChanged(CommandIDs.runAndReloadAll);
+    });
+
     // Add the command to the palette
     if (palette) {
       palette.addItem({
